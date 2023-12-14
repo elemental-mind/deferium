@@ -1,105 +1,56 @@
+import { ExtensiblePromise, NameMappedExtensiblePromise, ProtectedExtensiblePromise } from "./core.js";
 import assert from "assert";
 
-import { ExtensiblePromise, NameMappedExtensiblePromise, ProtectedExtensiblePromise } from "./core.js";
-
-const mapping = {resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "withdrawn", rejection: "withdrawalReason"} as const;
-
-const DefaultCustomPromise = ExtensiblePromise;
-const Signal_CustomNamePromise = NameMappedExtensiblePromise(
-    (resultType: string, rejectionType: string) => 
-    ({resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "withdrawn", rejection: "withdrawalReason"} as const)
-);
-
-function NoOp() { }
-
-class TypeTests
-{
-    BaseShouldDisplayMembers()
-    {
-        class BaseExtensible extends ExtensiblePromise
-        {
-            constructor()
-            {
-                super();
-                this.resolve();
-            }
-        }
-
-        let instance = new BaseExtensible();
-        instance.resolve();
-    }
-
-    BaseShouldRenameAndDisplayRenamedMembers()
-    {
-        class RenamedBaseExtensible extends NameMappedExtensiblePromise((resolve: void, reject: void) => mapping)
-        {
-            constructor()
-            {
-                super();
-                this.send();
-                //@ts-expect-error
-                this.resolve();
-            }
-        }
-
-        let instance = new RenamedBaseExtensible();
-        instance.send();
-        //@ts-expect-error
-        this.resolve();
-    }
-
-    ProtectedShouldHideMembers()
-    {
-        class ProtectedExtensible extends ProtectedExtensiblePromise
-        {
-            constructor()
-            {
-                super();
-                this.resolve();
-            }
-        }
-
-        let instance = new ProtectedExtensible();
-        //@ts-expect-error
-        instance.resolve();
-    }
-}
+function NoOp() { };
 
 export class DefaultTests
 {
-    promise = new DefaultCustomPromise();
+    promise = new ExtensiblePromise<number, number>();
 
     ShouldHaveResolveRejectFunctions()
     {
-        this.promise.reject()
         assert.equal(typeof this.promise.resolve, "function");
         assert.equal(typeof this.promise.reject, "function");
     }
 
-    async ShouldResolve()
+    async ShouldResolveAndUpdateStatus()
     {
         let resolved = false;
-        this.promise.then(() => resolved = true).catch(() => { throw new Error(); });
-        this.promise.resolve();
+        this.promise.then(() => resolved = true);
+        this.promise.resolve(200);
         await this.promise;
 
+        assert.equal(this.promise.isResolved, true);
+        assert.equal(this.promise.isRejected, false);
+        assert.equal(this.promise.result, 200);
         assert.ok(resolved);
     }
 
-    async ShouldReject()
+    async ShouldRejectAndUpdateStatus()
     {
         let rejected = false;
-        this.promise.then(() => { throw new Error(); }).catch(() => rejected = true);
-        this.promise.reject();
-        await this.promise;
+       
+        try
+        {
+            this.promise.reject(404);
+            await this.promise;
+        }
+        catch
+        {
+            rejected = true;
+        }
 
+        assert.equal(this.promise.isResolved, false);
+        assert.equal(this.promise.isRejected, true);
+        assert.equal(this.promise.rejection, 404);
         assert.ok(rejected);
     }
 }
 
 export class CustomizedPromiseTests
 {
-    signal = new Signal_CustomNamePromise();
+    CustomizedPromise = NameMappedExtensiblePromise({ resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "isWithdrawn", rejection: "withdrawalReason" } as const);
+    signal = new this.CustomizedPromise<string, string>();
 
     ShouldHaveCustomNamedFunctions()
     {
@@ -109,41 +60,40 @@ export class CustomizedPromiseTests
 
     ShouldHaveCustomNamedStatus()
     {
-        let something = new Promise<string>(resolve => setTimeout(() => resolve, 100));
         assert.equal(this.signal.isSent, false);
-        assert.equal(this.signal.withdrawn, false);
+        assert.equal(this.signal.isWithdrawn, false);
     }
 
     async ShouldResolve()
     {
-        
         let resolved = false;
         this.signal.then(() => resolved = true).catch(() => { throw new Error(); });
         this.signal.send("Success");
         await this.signal;
 
+        assert.equal(this.signal.isSent, true);
+        assert.equal(this.signal.isWithdrawn, false);
+        assert.equal(this.signal.message, "Success");
         assert.ok(resolved);
     }
 
-    async ShouldHaveCustomNamedResultProperty()
+    async ShouldRejectAndUpdateStatus()
     {
-        this.signal.send("Success");
-        await this.signal;
-    }
-
-    async ShouldReject()
-    {
-        
-        this.signal.then()
         let rejected = false;
-        this.signal.then(() => { throw new Error(); }).catch(() => rejected = true);
-        this.signal.withdraw("Error");
-        await this.signal;
-        assert.ok(rejected);
-    }
+               
+        try
+        {
+            this.signal.withdraw("Error");
+            await this.signal;
+        }
+        catch
+        {
+            rejected = true;
+        }
 
-    async ShouldHaveCustomNamedRejectionProperty()
-    {
-        this.signal.then()
+        assert.equal(this.signal.isSent, false);
+        assert.equal(this.signal.isWithdrawn, true);
+        assert.equal(this.signal.withdrawalReason, "Error");
+        assert.ok(rejected);
     }
 }
