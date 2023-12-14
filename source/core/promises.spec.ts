@@ -1,7 +1,7 @@
 import { ExtensiblePromise, NameMappedExtensiblePromise, ProtectedExtensiblePromise } from "./promises.js";
 import assert from "assert";
 
-export class DefaultTests
+export class ExtensiblePromiseTests
 {
     promise = new ExtensiblePromise<number, number>();
 
@@ -68,7 +68,7 @@ export class DefaultTests
     }
 }
 
-export class CustomizedPromiseTests
+export class NameMappedExtensiblePromiseTests
 {
     CustomizedPromise = NameMappedExtensiblePromise({ resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "isWithdrawn", rejection: "withdrawalReason", cancel: "abort", isCancelled: "isAborted", cancelReason: "abortReason" } as const);
     signal = new this.CustomizedPromise<string, string>();

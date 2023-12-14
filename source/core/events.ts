@@ -21,6 +21,7 @@ export class EventEmitter<E = void> implements IEventEmitter<E>
             this.handlers.add(boundFunction);
         }
     }
+    
 
     subscribeOnce(handlerOrInstance: EventHandler<E> | object, method?: EventHandler<E>)
     {
