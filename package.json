@@ -27,7 +27,7 @@
     "undici-types": "^5.26.5"
   },
   "scripts": {
-    "test": "unitium-tsx source/core.spec.ts"
+    "test": "unitium-tsx source/core"
   },
   "keywords": [
     "promise",

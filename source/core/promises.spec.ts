@@ -1,4 +1,4 @@
-import { ExtensiblePromise, NameMappedExtensiblePromise, ProtectedExtensiblePromise } from "./core.js";
+import { ExtensiblePromise, NameMappedExtensiblePromise, ProtectedExtensiblePromise } from "./promises.js";
 import assert from "assert";
 
 function NoOp() { };
@@ -21,9 +21,31 @@ export class DefaultTests
         await this.promise;
 
         assert.equal(this.promise.isResolved, true);
+        assert.equal(this.promise.isCancelled, false);
         assert.equal(this.promise.isRejected, false);
         assert.equal(this.promise.result, 200);
         assert.ok(resolved);
+    }
+
+    async ShouldCancelAndUpdateStatus()
+    {
+        let cancelled = false;
+       
+        try
+        {
+            this.promise.cancel();
+            await this.promise;
+        }
+        catch
+        {
+            if(this.promise.isCancelled) cancelled = true;
+        }
+
+        assert.equal(this.promise.isResolved, false);
+        assert.equal(this.promise.isCancelled, true);
+        assert.equal(this.promise.isRejected, false);
+        assert.equal(this.promise.cancelReason, undefined);
+        assert.ok(cancelled);
     }
 
     async ShouldRejectAndUpdateStatus()
@@ -37,10 +59,11 @@ export class DefaultTests
         }
         catch
         {
-            rejected = true;
+            if(this.promise.isRejected) rejected = true;
         }
 
         assert.equal(this.promise.isResolved, false);
+        assert.equal(this.promise.isCancelled, false);
         assert.equal(this.promise.isRejected, true);
         assert.equal(this.promise.rejection, 404);
         assert.ok(rejected);
@@ -49,7 +72,7 @@ export class DefaultTests
 
 export class CustomizedPromiseTests
 {
-    CustomizedPromise = NameMappedExtensiblePromise({ resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "isWithdrawn", rejection: "withdrawalReason" } as const);
+    CustomizedPromise = NameMappedExtensiblePromise({ resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "isWithdrawn", rejection: "withdrawalReason", cancel: "abort", isCancelled: "isAborted", cancelReason: "abortReason" } as const);
     signal = new this.CustomizedPromise<string, string>();
 
     ShouldHaveCustomNamedFunctions()
@@ -72,9 +95,31 @@ export class CustomizedPromiseTests
         await this.signal;
 
         assert.equal(this.signal.isSent, true);
+        assert.equal(this.signal.isAborted, false);
         assert.equal(this.signal.isWithdrawn, false);
         assert.equal(this.signal.message, "Success");
         assert.ok(resolved);
+    }
+
+    async ShouldCancelAndUpdateStatus()
+    {
+        let cancelled = false;
+       
+        try
+        {
+            this.signal.abort();
+            await this.signal;
+        }
+        catch
+        {
+            if(this.signal.isAborted) cancelled = true;
+        }
+
+        assert.equal(this.signal.isSent, false);
+        assert.equal(this.signal.isAborted, true);
+        assert.equal(this.signal.isWithdrawn, false);
+        assert.equal(this.signal.abortReason, undefined);
+        assert.ok(cancelled);
     }
 
     async ShouldRejectAndUpdateStatus()
@@ -88,10 +133,11 @@ export class CustomizedPromiseTests
         }
         catch
         {
-            rejected = true;
+            if(this.signal.isWithdrawn) rejected = true;
         }
 
         assert.equal(this.signal.isSent, false);
+        assert.equal(this.signal.isAborted, false);
         assert.equal(this.signal.isWithdrawn, true);
         assert.equal(this.signal.withdrawalReason, "Error");
         assert.ok(rejected);

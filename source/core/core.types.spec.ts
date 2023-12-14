@@ -1,4 +1,4 @@
-import { ExtensiblePromise, ProtectedExtensiblePromise, NameMappedExtensiblePromise } from "./core.js";
+import { ExtensiblePromise, ProtectedExtensiblePromise, NameMappedExtensiblePromise } from "./promises.js";
 
 const mapping = {resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "withdrawn", rejection: "withdrawalReason"} as const;
 
