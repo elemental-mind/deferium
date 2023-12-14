@@ -1,8 +1,6 @@
 import { ExtensiblePromise, NameMappedExtensiblePromise, ProtectedExtensiblePromise } from "./promises.js";
 import assert from "assert";
 
-function NoOp() { };
-
 export class DefaultTests
 {
     promise = new ExtensiblePromise<number, number>();

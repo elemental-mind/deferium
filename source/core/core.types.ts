@@ -1,8 +1,11 @@
-export const CustomPromiseSym = Symbol();
 export type ResolveFunction<SuccessType> = (value: SuccessType) => void;
 export type RejectFunction<FailureType> = (value: FailureType) => void;
 export type CancelFunction<CancelType> = (value: CancelType) => void;
+export type ConfigurationMap<ResolveType, RejectType, CancelType> = { [K in keyof (IPromise<ResolveType, RejectType, CancelType>)]-?: string; };
+export type INameMappedPromise<ResolveType, RejectType, CancelType, Names> = { -readonly [Prop in keyof Names as Names[Prop] extends string ? Names[Prop] : never]: Prop extends keyof IPromise<ResolveType, RejectType, CancelType> ? IPromise<ResolveType, RejectType, CancelType>[Prop] : never; } & IPrivatePromise<ResolveType, RejectType, CancelType>;
+export type EventHandler<E> = (event: E) => void;
 
+export const CustomPromiseSym = Symbol();
 export abstract class IBasePromise<SuccessType, FailureType, CancelType>
 {
     declare [CustomPromiseSym]: undefined;
@@ -50,5 +53,15 @@ abstract class IPrivatePromise<SuccessType, FailureType, CancelType>
     private cancelReason?: CancelType;
 }
 
-export type ConfigurationMap<ResolveType, RejectType, CancelType> = { [K in keyof (IPromise<ResolveType, RejectType, CancelType>)]-?: string; };
-export type INameMappedPromise<ResolveType, RejectType, CancelType, Names> = { -readonly [Prop in keyof Names as Names[Prop] extends string ? Names[Prop] : never]: Prop extends keyof IPromise<ResolveType, RejectType, CancelType> ? IPromise<ResolveType, RejectType, CancelType>[Prop] : never; } & IPrivatePromise<ResolveType, RejectType, CancelType>;
+export interface IEventEmitter<E>
+{
+    subscribe(handler: EventHandler<E>): void;
+    subscribe(instance: object, method: EventHandler<E>): void;
+    
+    subscribeOnce(handler: EventHandler<E>): void;
+    subscribeOnce(instance: object, method: EventHandler<E>): void;
+
+    unsubscribe(handler: EventHandler<E>): void;
+    unsubscribe(instance: object): void;
+    unsubscribe(instance: object, method: EventHandler<E>): void;
+}

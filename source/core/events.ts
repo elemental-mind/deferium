@@ -1,21 +1,8 @@
-//We use these to save space on EventManager object instances.
+import type { EventHandler, IEventEmitter } from "./core.types.js";
+
+//We use these to save memory on EventManager object instances.
 const GlobalBindingMap = new WeakMap<object, Set<EventHandler<any>>>();
 const GlobalOnceSubscribers = new WeakMap<EventEmitter<any>, Set<EventHandler<any>>>();
-
-type EventHandler<E> = (event: E) => void;
-
-interface IEventEmitter<E>
-{
-    subscribe(handler: EventHandler<E>): void;
-    subscribe(instance: object, method: EventHandler<E>): void;
-    
-    subscribeOnce(handler: EventHandler<E>): void;
-    subscribeOnce(instance: object, method: EventHandler<E>): void;
-
-    unsubscribe(handler: EventHandler<E>): void;
-    unsubscribe(instance: object): void;
-    unsubscribe(instance: object, method: EventHandler<E>): void;
-}
 
 export class EventEmitter<E = void> implements IEventEmitter<E>
 {
