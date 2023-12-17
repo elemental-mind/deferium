@@ -1,7 +1,6 @@
-import { ExtensiblePromise, ProtectedExtensiblePromise, NameMappedExtensiblePromise } from "./promises.js";
+import { Awaitable, ProtectedAwaitable, NameMappedAwaitable } from "./awaitable.js";
 
 const mapping = {resolve: "send", isResolved: "isSent", result: "message", reject: "withdraw", isRejected: "withdrawn", rejection: "withdrawalReason"} as const;
-
 
 /**
  * This class is solely for testing type support. It should not generate any TS errors.
@@ -10,7 +9,7 @@ class TypeTests
 {
     BaseShouldDisplayMembers()
     {
-        class BaseExtensible extends ExtensiblePromise
+        class BaseExtensible extends Awaitable
         {
             constructor()
             {
@@ -25,7 +24,7 @@ class TypeTests
 
     BaseShouldRenameAndDisplayRenamedMembers()
     {
-        class RenamedBaseExtensible extends NameMappedExtensiblePromise(mapping)
+        class RenamedBaseExtensible extends NameMappedAwaitable(mapping)
         {
             constructor()
             {
@@ -44,7 +43,7 @@ class TypeTests
 
     ProtectedShouldHideMembers()
     {
-        class ProtectedExtensible extends ProtectedExtensiblePromise
+        class ProtectedExtensible extends ProtectedAwaitable
         {
             constructor()
             {
@@ -60,7 +59,7 @@ class TypeTests
 
     BaseSupportsGenerics()
     {
-        class GenericRenamedPromise<S, F> extends NameMappedExtensiblePromise(mapping)<S, F>
+        class GenericRenamedPromise<S, F> extends NameMappedAwaitable(mapping)<S, F>
         {
             success()
             {
@@ -78,7 +77,7 @@ class TypeTests
 
     RenamedSupportsGenerics()
     {
-        class GenericRenamedPromise<S, F> extends NameMappedExtensiblePromise(mapping)<S, F>
+        class GenericRenamedPromise<S, F> extends NameMappedAwaitable(mapping)<S, F>
         {
             success()
             {
