@@ -1,31 +1,9 @@
 {
   "type": "module",
-  "devDependencies": {
-    "@types/node": "^20.10.4",
-    "unitium": "^0.3.2"
-  },
   "name": "deferium",
   "version": "0.0.1",
   "description": "A framework for working with higher-level promises.",
   "main": "TODO.js",
-  "dependencies": {
-    "is-glob": "^4.0.3",
-    "fill-range": "^7.0.1",
-    "fastq": "^1.15.0",
-    "braces": "^3.0.2",
-    "is-extglob": "^2.1.1",
-    "fast-glob": "^3.3.2",
-    "merge2": "^1.4.1",
-    "is-number": "^7.0.0",
-    "glob-parent": "^5.1.2",
-    "picomatch": "^2.3.1",
-    "micromatch": "^4.0.5",
-    "reusify": "^1.0.4",
-    "run-parallel": "^1.2.0",
-    "queue-microtask": "^1.2.3",
-    "to-regex-range": "^5.0.1",
-    "undici-types": "^5.26.5"
-  },
   "scripts": {
     "test": "unitium-tsx source/core"
   },
@@ -44,5 +22,12 @@
     "thenable"
   ],
   "author": "Magnus Meseck",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "unitium": "^0.3.3"
+  },
+  "dependencies": {
+    "fusium-js": "^0.0.10"
+  }
 }
