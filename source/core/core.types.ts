@@ -127,3 +127,13 @@ export abstract class IProtectedStreamable<T>
     protected abstract emit(chunk: T): void;
     protected abstract close() : void;
 }
+
+
+/**
+ * MemoryLeakable Types
+ */
+
+export abstract class IMemoryLeakable
+{
+    abstract destroy():void;
+}
