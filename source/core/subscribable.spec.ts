@@ -1,4 +1,4 @@
-import { EventEmitter } from "./events.js";
+import { Subscribable } from "./subscribable.js";
 import assert from "assert";
 
 class HandlerClass {
@@ -15,7 +15,7 @@ class HandlerClass {
 }
 
 export class EventEmitterTests {
-    eventEmitter = new EventEmitter<string>();
+    eventEmitter = new Subscribable<string>();
 
     ShouldSubscribeAndEmitEvents() {
         let receivedEvent: string | null = null;
@@ -79,7 +79,7 @@ export class EventEmitterTests {
 
     ShouldSubscribeMethodsOfSameInstance() {
         const testInstance = new HandlerClass();
-        const eventEmitter = new EventEmitter<string>();
+        const eventEmitter = new Subscribable<string>();
 
         eventEmitter.subscribe(testInstance, testInstance.handleEvent1);
         eventEmitter.subscribe(testInstance, testInstance.handleEvent2);
@@ -92,7 +92,7 @@ export class EventEmitterTests {
 
     ShouldUnsubscribeMethodsOfSameInstance() {
         const testInstance = new HandlerClass();
-        const eventEmitter = new EventEmitter<string>();
+        const eventEmitter = new Subscribable<string>();
 
         eventEmitter.subscribe(testInstance, testInstance.handleEvent1);
         eventEmitter.subscribe(testInstance, testInstance.handleEvent2);
@@ -107,7 +107,7 @@ export class EventEmitterTests {
     ShouldUnsubscribeSingleInstanceOfMultiple() {
         const instance1 = new HandlerClass();
         const instance2 = new HandlerClass();
-        const eventEmitter = new EventEmitter<string>();
+        const eventEmitter = new Subscribable<string>();
 
         eventEmitter.subscribe(instance1, instance1.handleEvent1);
         eventEmitter.subscribe(instance2, instance2.handleEvent1);

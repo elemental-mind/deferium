@@ -1,24 +1,26 @@
-import type { EventHandler, IEventEmitter } from "./core.types.js";
+import { Trait } from "fusium-js";
+import type { EventHandler, ISubscribable as ISubscribable } from "./core.types.js";
 
 //We use these to save memory on EventManager object instances.
 const GlobalBindingMap = new WeakMap<object, Set<EventHandler<any>>>();
-const GlobalOnceSubscribers = new WeakMap<EventEmitter<any>, Set<EventHandler<any>>>();
+const GlobalOnceSubscribers = new WeakMap<Subscribable<any>, Set<EventHandler<any>>>();
 
-export class EventEmitter<E = void> implements IEventEmitter<E>
+const handlersSym = Symbol();
+export class Subscribable<E = void> extends Trait implements ISubscribable<E>
 {
-    handlers = new Set<EventHandler<E>>();
+    protected [handlersSym] = new Set<EventHandler<E>>();
 
     subscribe(handlerOrInstance: EventHandler<E> | object, method?: EventHandler<E>)
     {
         if (!method)
         {
-            this.handlers.add(handlerOrInstance as EventHandler<E>);
+            this[handlersSym].add(handlerOrInstance as EventHandler<E>);
         }
         else
         {
             const boundFunction = method.bind(handlerOrInstance as object);
             GlobalBindingMap.get(handlerOrInstance)?.add(boundFunction) ?? GlobalBindingMap.set(handlerOrInstance, new Set([boundFunction]));
-            this.handlers.add(boundFunction);
+            this[handlersSym].add(boundFunction);
         }
     }
     
@@ -51,7 +53,7 @@ export class EventEmitter<E = void> implements IEventEmitter<E>
             const boundFunctions = GlobalBindingMap.get(handlerOrInstance as object)
             if(boundFunctions)
             {
-                const boundFunction = this.#intersect(this.handlers, boundFunctions)[0];
+                const boundFunction = this.#intersect(this[handlersSym], boundFunctions)[0];
                 if(boundFunction) this.#unsubscribeHandler(boundFunction);
             }
         }
@@ -59,20 +61,20 @@ export class EventEmitter<E = void> implements IEventEmitter<E>
 
     emit(event: E)
     {
-        for (const handler of this.handlers) handler(event);
+        for (const handler of this[handlersSym]) handler(event);
         const onceHandlers = GlobalOnceSubscribers.get(this);
-        if (onceHandlers) for (const onceHandler of onceHandlers) this.handlers.delete(onceHandler);
+        if (onceHandlers) for (const onceHandler of onceHandlers) this[handlersSym].delete(onceHandler);
     }
 
     #addHandlerOnce(handler: EventHandler<E>)
     {
-        this.handlers.add(handler);
+        this[handlersSym].add(handler);
         GlobalOnceSubscribers.get(this)?.add(handler) ?? GlobalOnceSubscribers.set(this, new Set([handler]));
     }
 
     #unsubscribeHandler(handler: EventHandler<E>)
     {
-        this.handlers.delete(handler);
+        this[handlersSym].delete(handler);
         const onceSubscriptions = GlobalOnceSubscribers.get(this);
         if(onceSubscriptions)
         {
@@ -86,8 +88,8 @@ export class EventEmitter<E = void> implements IEventEmitter<E>
         const boundMethods = GlobalBindingMap.get(instance);
         if(boundMethods)
         {
-            const registeredInstanceHandlers = this.#intersect(this.handlers, boundMethods);
-            for (const boundMethod of registeredInstanceHandlers) this.handlers.delete(boundMethod);
+            const registeredInstanceHandlers = this.#intersect(this[handlersSym], boundMethods);
+            for (const boundMethod of registeredInstanceHandlers) this[handlersSym].delete(boundMethod);
         }
     }
 
