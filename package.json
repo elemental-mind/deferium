@@ -1,11 +1,12 @@
 {
-  "type": "module",
   "name": "deferium",
   "version": "0.0.1",
-  "description": "A framework for working with higher-level promises.",
-  "main": "TODO.js",
+  "description": "A framework for working with higher level async types.",
   "scripts": {
-    "test": "unitium-tsx source/time/cycle.spec.ts"
+    "dry-update": "tsc",
+    "patch": "tsc && npm version patch && git push && npm publish",
+    "release": "tsc && npm version minor && git push && npm publish",
+    "test": "unitium-tsx source"
   },
   "keywords": [
     "promise",
@@ -29,5 +30,8 @@
   },
   "dependencies": {
     "fusium-js": "^0.0.13"
-  }
+  },
+  "type": "module",
+  "exports": "./distribution/deferium.js",
+  "types": "./distribution/deferium.d.ts"
 }
