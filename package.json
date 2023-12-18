@@ -1,6 +1,6 @@
 {
   "name": "deferium",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A framework for working with higher level async types.",
   "scripts": {
     "dry-update": "tsc",
