@@ -5,7 +5,7 @@
   "description": "A framework for working with higher-level promises.",
   "main": "TODO.js",
   "scripts": {
-    "test": "unitium-tsx source/core"
+    "test": "unitium-tsx source/time"
   },
   "keywords": [
     "promise",

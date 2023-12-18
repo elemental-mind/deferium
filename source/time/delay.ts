@@ -7,7 +7,7 @@ export class Delay extends ProtectedAwaitable
     constructor(protected msDelay: number) { 
         super();
         this.creationTime = Date.now();
-        this.timeout = setTimeout(this.resolve, msDelay);
+        this.timeout = setTimeout(this.resolve.bind(this), msDelay);
     };
 
     static for(msDelay: number)
