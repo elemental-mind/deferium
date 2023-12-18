@@ -13,18 +13,18 @@ abstract class Chunk
     }
 }
 
-class StartChunk extends Chunk { };
-class DataChunk<T> extends Chunk
+export class StartChunk extends Chunk { };
+export class DataChunk<T> extends Chunk
 {
     constructor(public data: T) { super(); }
 }
 
-class CloseChunk extends Chunk
+export class CloseChunk extends Chunk
 {
     constructor() { super(); this.resolveNext(this); };
 }
 
-class ErrorChunk extends Chunk 
+export class ErrorChunk extends Chunk 
 {
     constructor(public error: any) { super(); this.resolveNext(this); };
 }
