@@ -28,6 +28,6 @@
     "unitium": "^0.3.3"
   },
   "dependencies": {
-    "fusium-js": "^0.0.10"
+    "fusium-js": "^0.0.11"
   }
 }
