@@ -5,7 +5,7 @@
   "description": "A framework for working with higher-level promises.",
   "main": "TODO.js",
   "scripts": {
-    "test": "unitium-tsx source/time"
+    "test": "unitium-tsx source/time/cycle.spec.ts"
   },
   "keywords": [
     "promise",
@@ -28,6 +28,6 @@
     "unitium": "^0.3.3"
   },
   "dependencies": {
-    "fusium-js": "^0.0.11"
+    "fusium-js": "^0.0.13"
   }
 }
