@@ -3,11 +3,6 @@ import { MemoryLeakable } from "../core/memoryLeakable.js";
 import { AsyncStreamable, StartChunk } from "../core/streamable.js";
 import { Subscribable } from "../core/subscribable.js";
 
-declare namespace Cycle {
-    
-}
-
-
 export class Cycle extends FusionOf(MemoryLeakable, AsyncStreamable<Date>)
 {
     protected timeResource: TimeResource | null = null;
