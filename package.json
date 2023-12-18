@@ -2,6 +2,11 @@
   "name": "deferium",
   "version": "0.1.0",
   "description": "A framework for working with higher level async types.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/elemental-mind/deferium.git"
+  },
+  "homepage": "https://github.com/elemental-mind/deferium#readme",
   "scripts": {
     "dry-update": "tsc",
     "patch": "tsc && npm version patch && git push && npm publish",

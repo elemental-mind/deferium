@@ -73,7 +73,7 @@ class Process
 }
 ```
 
-Or use it as a Base Class:
+Or use it as a base class:
 
 ```typescript
 class Process extends Awaitable
@@ -95,8 +95,6 @@ if(!FindNeedleInHaystack.isResolved)    //This is one of the properties that aut
 
 console.log("Medal of Honour");
 ```
-
-### Cancellable Types
 
 ### Cancellable Types
 
@@ -131,7 +129,7 @@ if (process.isCancelled) {
 }
 ```
 
-The Cancellable type ensures that your asynchronous operations are robust and respect the lifecycle of your application, preventing unintended side effects when operations are no longer relevant.
+The `Cancellable` type ensures that your asynchronous operations are robust and respect the lifecycle of your application, preventing unintended side effects when operations are no longer relevant.
 
 Remember to handle the cancellation in your asynchronous tasks through an override of the respective functions to properly free up resources and avoid executing further logic after the cancellation has been requested.
 
@@ -183,7 +181,7 @@ dataStreamer.endStream();
 
 ```
 
-The Streamable type allows you to build responsive and efficient data processing mechanisms that can handle real-time data, streams of API responses, or any other form of sequential data.
+The `Streamable` type allows you to build responsive and efficient data processing mechanisms that can handle real-time data, streams of API responses, or any other form of sequential data.
 
 ### Subscribable Types
 
@@ -217,9 +215,9 @@ dispatcher.onMessage.unsubscribe(eventHandler);
 
 ```
 
-The Subscribable type is a utility type for managing and coordinating events within your application.
+The `Subscribable` type is a utility type for managing and coordinating events within your application.
 
-The Subscribable type can of course also be derived from to have more customized subscriber management etc. or name mapped methods and members.
+The `Subscribable` type can of course also be derived from to have more customized subscriber management etc. or name mapped methods and members.
 
 ### Memory-Leakable Types
 
