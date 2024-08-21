@@ -1,16 +1,16 @@
 import { AwaitableKeys, IsAwaitable, IAwaitable, IProtectedAwaitable, ResolveFunction, RejectFunction, SubscribableNames, INameMappedAwaitable, AwaitableNames } from "./core.types.js";
 import { Trait } from "fusium-js";
 
-const capturedResolveSym = Symbol();
-const capturedRejectSym = Symbol();
+const resolve = Symbol();
+const reject = Symbol();
 
 export class Awaitable<SuccessType = void, FailureType = void, CancelType = void> extends Trait implements IsAwaitable<SuccessType, FailureType, CancelType>, IAwaitable<SuccessType, FailureType, CancelType>
 {
     //We don't need this symbol. It's only needed for type identification purposes for framework typing.
     declare [AwaitableKeys]: undefined;
 
-    protected [capturedResolveSym]: ResolveFunction<any>;
-    protected [capturedRejectSym]: RejectFunction<any>;
+    protected [resolve]: ResolveFunction<any>;
+    protected [reject]: RejectFunction<any>;
 
     public isResolved = false;
     public result?: SuccessType;
@@ -26,8 +26,8 @@ export class Awaitable<SuccessType = void, FailureType = void, CancelType = void
         let captureResolve: ResolveFunction<any>;
         let captureCancel: RejectFunction<any>;
         const promise = new Promise<SuccessType>((resolve, reject) => { captureResolve = resolve; captureCancel = reject; });
-        this[capturedResolveSym] = captureResolve!;
-        this[capturedRejectSym] = captureCancel!;
+        this[resolve] = captureResolve!;
+        this[reject] = captureCancel!;
         this.then = promise.then.bind(promise);
         this.catch = promise.catch.bind(promise);
         this.finally = promise.finally.bind(promise);
@@ -37,14 +37,14 @@ export class Awaitable<SuccessType = void, FailureType = void, CancelType = void
     {
         this.isResolved = true;
         this.result = value;
-        this[capturedResolveSym](value);
+        this[resolve](value);
     }
 
     reject(error: FailureType)
     {
         this.isRejected = true;
         this.rejection = error;
-        this[capturedRejectSym](error);
+        this[reject](error);
     }
 }
 
@@ -68,8 +68,8 @@ export function NameMappedAwaitable<Config extends AwaitableNames<any, any, any>
             let captureResolve: ResolveFunction<any>;
             let captureCancel: RejectFunction<any>;
             const promise = new Promise<SuccessType>((resolve, reject) => { captureResolve = resolve; captureCancel = reject; });
-            (this as any)[capturedResolveSym] = captureResolve!;
-            (this as any)[capturedRejectSym] = captureCancel!;
+            (this as any)[resolve] = captureResolve!;
+            (this as any)[reject] = captureCancel!;
             (this as any).then = promise.then.bind(promise);
             (this as any).catch = promise.catch.bind(promise);
             (this as any).finally = promise.finally.bind(promise);
@@ -79,14 +79,14 @@ export function NameMappedAwaitable<Config extends AwaitableNames<any, any, any>
         {
             (this as any)[resolvedName!] = true;
             (this as any)[resultName!] = value;
-            (this as any)[capturedResolveSym](value);
+            (this as any)[resolve](value);
         }
 
         [rejectName](error: any)
         {
             (this as any)[rejectedName!] = true;
             (this as any)[rejectionName!] = error;
-            (this as any)[capturedRejectSym](error);
+            (this as any)[reject](error);
         }
     } as unknown as new <SuccessType = void, FailureType = void, CancelType = void>() => IsAwaitable<SuccessType, FailureType, CancelType> & INameMappedAwaitable<SuccessType, FailureType, CancelType, Config>;
 
