@@ -15,13 +15,13 @@ export class Task<T extends (...args: any[]) => Generator<Thenable<any>, any, an
 {
     constructor(public steps: T) { }
 
-    run(...args: ArgsOf<T>): TaskExecution
+    run(...args: ArgsOf<T>): TaskExecutionHandle
     {
-        return new TaskExecution(this, ...args);
+        return new TaskExecutionHandle(this, ...args);
     }
 }
 
-class TaskExecution extends FusionOf(Awaitable, Cancellable)
+class TaskExecutionHandle extends FusionOf(Awaitable, Cancellable)
 {
     constructor(private task: Task<any>, ...args: any)
     {
