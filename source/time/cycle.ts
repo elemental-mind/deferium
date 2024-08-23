@@ -103,13 +103,21 @@ export class Cycle extends FusionOf(MemoryLeakable, AsyncStreamable<Date>)
         this.timeResource = new TimeResource("Interval", setInterval(this.handleTick, this.msPeriod), Date.now() + this.msPeriod, Date.now());
     }
 
-    stop()
+    /***
+     * This temporarily halts the emission of tick events, but enables the restart of the cycle. Tick streams will not be closed.
+     * If you would like to permanently stop the cycle and close the streams, use the `stop` member.
+     */
+    pause()
     {
         this.timeResource?.destroy();
         this.timeResource = null;
     }
 
-    destroy()
+    /***
+     * stops the timer permanently. It can not be started again after this call. ALl tick streams will be closed.
+     * If you would like to resume the cycle later, use the `pause` member.
+     */
+    stop()
     {
         this.close();
         this.timeResource?.destroy();
