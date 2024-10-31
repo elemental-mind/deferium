@@ -1,4 +1,4 @@
-type EventHandler<T> = (event: T) => void;
+type EventHandler<T> = T extends void ? () => void : (event: T) => void;
 
 interface SubscriptionListElement<T>
 {
@@ -11,7 +11,7 @@ interface Subscription<T> extends SubscriptionListElement<T>
     matches(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): boolean;
 }
 
-export class EventEmitter<T = undefined> implements SubscriptionListElement<T>
+export class EventEmitter<T = void> implements SubscriptionListElement<T>
 {
     nextSubscription?: Subscription<T>;
 
