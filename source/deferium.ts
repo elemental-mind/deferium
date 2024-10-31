@@ -5,6 +5,9 @@ export { Cancellable } from "./core/cancellable.js";
 export { MemoryLeakable } from "./core/memoryLeakable.js";
 export { Subscribable } from "./core/subscribable.js";
 
+//Event types
+export { EventEmitter } from "./events/eventEmitter.js";
+
 //Time Types
 export { Delay, AdjustableDelay } from "./time/delay.js";
 export { Cycle, AdjustableCycle } from "./time/cycle.js";
