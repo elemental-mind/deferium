@@ -1,7 +1,7 @@
 import { Trait } from "fusium-js";
 import { IMemoryLeakable } from "./core.types.js";
 
-export const ResourceMap = new Map<any, MemoryLeakable>();
+export const ResourceMap = new Set<MemoryLeakable>();
 export const MemoryLeakableConfig = 
 {
     debug: false
@@ -10,6 +10,11 @@ export const MemoryLeakableConfig =
 export class MemoryLeakable extends Trait implements IMemoryLeakable
 {
     #resourceHandle: MemoryLeakable | null = null;
+
+    constructor()
+    {
+        super();
+    }
 
     set resourceHandle(value: any)
     {
@@ -20,13 +25,13 @@ export class MemoryLeakable extends Trait implements IMemoryLeakable
         else
         {
             this.#resourceHandle = value;
-            if(MemoryLeakableConfig.debug) ResourceMap.set(value, this);
+            if(MemoryLeakableConfig.debug) ResourceMap.add(this);
         }
     }
 
     destroy()
     {
-        if(MemoryLeakableConfig.debug) ResourceMap.delete(this.#resourceHandle);
+        if(MemoryLeakableConfig.debug) ResourceMap.delete(this);
         this.#resourceHandle?.destroy?.();
         this.#resourceHandle = null;
     }

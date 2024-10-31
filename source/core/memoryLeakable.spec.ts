@@ -11,12 +11,14 @@ export class MemoryLeakableTests
     ShouldAddInstanceToResourceMapOnConstruction()
     {
         const leakable = new MemoryLeakable();
+        leakable.resourceHandle = "SomeHandle";
         assert.equal(ResourceMap.has(leakable), true);
     }
 
     ShouldRemoveInstanceFromResourceMapOnDestroy()
     {
         const leakable = new MemoryLeakable();
+        leakable.resourceHandle = "SomeHandle";
         assert.equal(ResourceMap.has(leakable), true);
         leakable.destroy();
         assert.equal(ResourceMap.has(leakable), false);
