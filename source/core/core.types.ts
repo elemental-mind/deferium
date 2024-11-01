@@ -64,7 +64,7 @@ export abstract class IProtectedAwaitable<SuccessType, FailureType, CancelType>
 export type SubscribableNames<E> = { [K in keyof (ISubscribable<E>)]-?: string; };
 export type INameMappedSubscribable<T, Names> = { -readonly [Prop in keyof Names as Names[Prop] extends string ? Names[Prop] : never]: Prop extends keyof ISubscribable<T> ? ISubscribable<T>[Prop] : never; };
 
-export type EventHandler<E> = (event: E) => void;
+export type EventHandler<T> = T extends void ? () => void : (event: T) => void;
 
 export const SubscribableKeys = Symbol();
 
@@ -137,3 +137,4 @@ export abstract class IMemoryLeakable
 {
     abstract destroy():void;
 }
+

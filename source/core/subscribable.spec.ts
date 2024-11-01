@@ -50,19 +50,6 @@ export class EventEmitterTests {
         assert.equal(receivedEvents, 1);
     }
 
-    ShouldUnsubscribeInstance() {
-        let receivedEvents = 0;
-        const instance = {};
-        const handler = function(event: string) { receivedEvents++; };
-
-        this.eventEmitter.subscribe(instance, handler);
-        this.eventEmitter.emit("TestEvent");
-        this.eventEmitter.unsubscribe(instance);
-        this.eventEmitter.emit("TestEvent");
-
-        assert.equal(receivedEvents, 1);
-    }
-
     ShouldHandleMultipleSubscribers() {
         let receivedEvent1: string | null = null;
         let receivedEvent2: string | null = null;
@@ -113,7 +100,7 @@ export class EventEmitterTests {
         eventEmitter.subscribe(instance2, instance2.handleEvent1);
 
         eventEmitter.emit("TestEvent");
-        eventEmitter.unsubscribe(instance1);
+        eventEmitter.unsubscribe(instance1, instance1.handleEvent1);
         eventEmitter.emit("TestEvent");
 
         assert.equal(instance1.eventCount1, 1);

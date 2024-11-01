@@ -1,101 +1,153 @@
 import { Trait } from "fusium-js";
 import type { EventHandler, ISubscribable as ISubscribable } from "./core.types.js";
 
-//We use these to save memory on EventManager object instances.
-const GlobalBindingMap = new WeakMap<object, Set<EventHandler<any>>>();
-const GlobalOnceSubscribers = new WeakMap<Subscribable<any>, Set<EventHandler<any>>>();
+export const nextSubscription = Symbol();
 
-const handlersSym = Symbol();
-export class Subscribable<E = void> extends Trait implements ISubscribable<E>
+export interface SubscriptionListElement<T>
 {
-    protected [handlersSym] = new Set<EventHandler<E>>();
+    [nextSubscription]?: Subscription<T>;
+}
 
-    subscribe(handlerOrInstance: EventHandler<E> | object, method?: EventHandler<E>)
-    {
-        if (!method)
-        {
-            this[handlersSym].add(handlerOrInstance as EventHandler<E>);
-        }
-        else
-        {
-            const boundFunction = method.bind(handlerOrInstance as object);
-            GlobalBindingMap.get(handlerOrInstance)?.add(boundFunction) ?? GlobalBindingMap.set(handlerOrInstance, new Set([boundFunction]));
-            this[handlersSym].add(boundFunction);
-        }
-    }
-    
+export interface Subscription<T> extends SubscriptionListElement<T>
+{
+    emit(event: T): boolean;
+    matches(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): boolean;
+}
 
-    subscribeOnce(handlerOrInstance: EventHandler<E> | object, method?: EventHandler<E>)
+export class Subscribable<T = void> extends Trait implements ISubscribable<T>
+{
+    [nextSubscription]?: Subscription<T>;
+
+    subscribe(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): void
     {
-        if (!method)
-        {
-            this.#addHandlerOnce(handlerOrInstance as EventHandler<E>)
-        }
-        else
-        {
-            const boundFunction = method.bind(handlerOrInstance as object);
-            GlobalBindingMap.get(handlerOrInstance)?.add(boundFunction) ?? GlobalBindingMap.set(handlerOrInstance, new Set([boundFunction]));
-            this.#addHandlerOnce(boundFunction);
-        }
+        this.#appendToSubscriptions(method ? new PermanentInstanceSubscription(handlerOrInstance, method) : new PermanentSubscription(handlerOrInstance as EventHandler<T>));
     }
 
-    unsubscribe(handlerOrInstance: EventHandler<E> | object, method?: EventHandler<E>)
+    subscribeOnce(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): void
     {
-        if (!method)
+        this.#appendToSubscriptions(method ? new EphemeralInstanceSubscription(handlerOrInstance, method) : new EphemeralSubscription(handlerOrInstance as EventHandler<T>));
+    }
+
+    #appendToSubscriptions(subscription: Subscription<T>)
+    {
+        let currentChainElement: SubscriptionListElement<T> = this;
+        while (currentChainElement[nextSubscription]) currentChainElement = currentChainElement[nextSubscription]!;
+
+        currentChainElement[nextSubscription] = subscription;
+    }
+
+    unsubscribe(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): void
+    {
+        for (let currentElement: SubscriptionListElement<T> = this; currentElement[nextSubscription] !== undefined; currentElement = currentElement[nextSubscription]!)
         {
-            if(handlerOrInstance instanceof Function)
-                this.#unsubscribeHandler(handlerOrInstance as EventHandler<E>)
-            else
-                this.#unsubscribeInstance(handlerOrInstance as object);
-        }
-        else
-        {
-            const boundFunctions = GlobalBindingMap.get(handlerOrInstance as object)
-            if(boundFunctions)
+            const subscription = currentElement[nextSubscription];
+
+            if (subscription.matches(handlerOrInstance, method))
             {
-                const boundFunction = this.#intersect(this[handlersSym], boundFunctions)[0];
-                if(boundFunction) this.#unsubscribeHandler(boundFunction);
+                currentElement[nextSubscription] = subscription[nextSubscription];
+                break;
             }
         }
     }
 
-    emit(event: E)
+    emit(event: T): void
     {
-        for (const handler of this[handlersSym]) handler(event);
-        const onceHandlers = GlobalOnceSubscribers.get(this);
-        if (onceHandlers) for (const onceHandler of onceHandlers) this[handlersSym].delete(onceHandler);
-    }
+        let currentElement: SubscriptionListElement<T> = this;
 
-    #addHandlerOnce(handler: EventHandler<E>)
-    {
-        this[handlersSym].add(handler);
-        GlobalOnceSubscribers.get(this)?.add(handler) ?? GlobalOnceSubscribers.set(this, new Set([handler]));
-    }
-
-    #unsubscribeHandler(handler: EventHandler<E>)
-    {
-        this[handlersSym].delete(handler);
-        const onceSubscriptions = GlobalOnceSubscribers.get(this);
-        if(onceSubscriptions)
+        while (currentElement[nextSubscription])
         {
-            onceSubscriptions.delete(handler);
-            if(!onceSubscriptions.size) GlobalOnceSubscribers.delete(this);
+            const subscription = currentElement[nextSubscription];
+
+            if (subscription.emit(event))
+                currentElement = subscription;
+            else
+                currentElement[nextSubscription] = subscription[nextSubscription];
         }
     }
+}
 
-    #unsubscribeInstance(instance: object)
+export class PermanentSubscription<T> implements Subscription<T>
+{
+    constructor(
+        public handler: EventHandler<T>
+    ) { }
+
+    emit(event: T)
     {
-        const boundMethods = GlobalBindingMap.get(instance);
-        if(boundMethods)
-        {
-            const registeredInstanceHandlers = this.#intersect(this[handlersSym], boundMethods);
-            for (const boundMethod of registeredInstanceHandlers) this[handlersSym].delete(boundMethod);
-        }
+        this.handler(event);
+        return true;
     }
 
-    #intersect<S>(setA: Set<S>, setB: Set<S>) : S[]
+    matches(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): boolean
     {
-        const [smallSet, bigSet] = setA.size < setB.size ? [setA, setB] : [setB, setA];
-        return [...smallSet].filter(element => bigSet.has(element));
+        if (method)
+            return false;
+        else
+            return handlerOrInstance === this.handler;
+    }
+}
+
+export class PermanentInstanceSubscription<T> implements Subscription<T>
+{
+    constructor(
+        public instance: object,
+        public method: EventHandler<T>,
+    ) { }
+
+    emit(event: T)
+    {
+        this.method.call(this.instance, event);
+        return true;
+    }
+
+    matches(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): boolean
+    {
+        if (!method)
+            return false;
+        else
+            return handlerOrInstance === this.instance && this.method === method;
+    }
+}
+
+export class EphemeralSubscription<T> implements Subscription<T>
+{
+    constructor(
+        public handler: EventHandler<T>
+    ) { }
+
+    emit(event: T)
+    {
+        this.handler(event);
+        return false;
+    }
+
+    matches(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): boolean
+    {
+        if (method)
+            return false;
+        else
+            return handlerOrInstance === this.handler;
+    }
+}
+
+export class EphemeralInstanceSubscription<T> implements Subscription<T>
+{
+    constructor(
+        public instance: object,
+        public method: EventHandler<T>,
+    ) { }
+
+    emit(event: T)
+    {
+        this.method.call(this.instance, event);
+        return false;
+    }
+
+    matches(handlerOrInstance: object | EventHandler<T>, method?: EventHandler<T> | undefined): boolean
+    {
+        if (!method)
+            return false;
+        else
+            return handlerOrInstance === this.instance && this.method === method;
     }
 }
