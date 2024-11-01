@@ -1,6 +1,6 @@
 {
   "name": "deferium",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A framework for working with higher level async types.",
   "repository": {
     "type": "git",
